@@ -1,0 +1,9 @@
+requirements:
+  - id: ''
+    level: RECOMMENDED
+    observability:
+    mutability:
+    title: The name or title of the requirement
+    content: >
+      This is the text description of the requirement and can span multiple
+      lines and even contain *markdown* _formatting_.
