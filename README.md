@@ -14,6 +14,7 @@ and deployment from the `/spec` directory.
 ```sh
 README.md
 /spec # the markdown files which are used to build the specification in GitBook
+/api-design-guide # the GovStack Cross-BB API Design Guide (its own GitBook space; see api-design-guide/README.md)
 /api # the openapi specification
 /test # the test plan and tests
   plan.md
