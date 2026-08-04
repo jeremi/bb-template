@@ -1,36 +1,39 @@
 # GovStack Building Block Template
 
-This template is intended to be used by the various GovStack building block
-repos. Each building block repo will have at least 4 main sections, outlined in
-the directory structure below.
+This repository is the starting point for a GovStack Building Block (BB)
+specification. Replace the generic reference domain with the BB's real
+requirements while preserving its traceability and conformance structure.
 
-## Gitbook and the published "Building Block Specifications" document
+## Start a BB specification
 
-Note that pushes to the `main` branch will automatically trigger a Gitbook build
-and deployment from the `/spec` directory.
+1. Give every normative requirement a stable identifier based on the BB code,
+   such as `REGISTRY-FR-001`. Never reuse an identifier for a different
+   requirement.
+2. Replace the reference contract at `api/openapi.yaml`. Keep `api/index.yaml`
+   as the canonical API registry. Keep the shared files under `api/common/`
+   pinned to their recorded upstream version and revision.
+3. Map every normative interface requirement in `api/coverage.yaml`.
+4. Run the checks in `test/plan.md` before requesting specification review.
 
-## Repo Structure
+The reference API is intentionally small. It demonstrates synchronous creation,
+pagination, long-running operations, standard errors, trace context, and OAuth
+2.0 without prescribing a domain model for real BBs.
 
-```sh
-README.md
-/spec # the markdown files which are used to build the specification in GitBook
-/api-design-guide # the GovStack Cross-BB API Design Guide (its own GitBook space; see api-design-guide/README.md)
-/api # the openapi specification
-/test # the test plan and tests
-  plan.md
-/examples # examples for deploying, configuring, and testing applications which implement the behaviors specified by this building block
-  /application-a
-    README.md # instructions for deployment/testing
-    docker-compose.yaml # example deployment file
-      db
-      web
-      adaptor
-      security-server
-    Caddyfile # example config for "adaptor"
-    Dockerfile # dockerfile to build "adaptor"
-  /application-b
-  /application-c
+## Repository structure
+
+```text
+spec/                    GitBook specification and stable requirements
+api/index.yaml           registry of canonical API documents
+api/openapi.yaml         canonical OpenAPI 3.1 reference contract
+api/coverage.yaml        authoritative requirement-to-interface mapping
+api/common/              pinned, vendored cross-BB contract components
+api-design-guide/        cross-BB API design rules and lint tooling
+test/plan.md             specification and implementation conformance plan
+examples/                deployable implementation examples
 ```
+
+Pushes to `main` publish the GitBook content under `spec/`. The API contract in
+`api/` remains the machine-readable source of truth for operations and schemas.
 
 ## ORB setup
 

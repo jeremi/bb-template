@@ -1,10 +1,13 @@
-# \<name of building block>
+# Building Block Specification Template
 
-{% hint style="success" %}
-Throughout this template are a series of these info callouts. They are designed to guide the type of content to add in each section and often contain example content from other building blocks. Delete them as no longer required.
-{% endhint %}
+Use this book to define one GovStack Building Block. Replace the reference
+examples with domain-specific content before publication and remove authoring
+instructions that no longer apply.
 
+The normative specification consists of the requirements in Sections 5 and 6,
+the interface data in Sections 7 and 8, and the workflows in Section 9. Every
+normative requirement has a stable ID and exactly one disposition in
+[`api/coverage.yaml`](../api/coverage.yaml).
 
-
-\
-Developed by: `<Names and organization affiliations of working group members>` in cooperation with GIZ, ITU, DIAL, and the Government of Estonia
+Record the editors and their organisational affiliations here when the BB
+working group is established.

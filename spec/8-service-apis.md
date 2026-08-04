@@ -1,31 +1,33 @@
 # 8 Service APIs
 
-This section provides a reference for APIs that should be implemented by this Building Block. The APIs defined here establish a blueprint for how the Building Block will interact with other Building Blocks. Additional APIs may be implemented by the Building Block, but the listed APIs define a minimal set of functionality that should be provided by any implementation of this Building Block.&#x20;
+Machine-readable API documents are normative. Keep one canonical entrypoint per
+surface and enumerate it in [`api/index.yaml`](../api/index.yaml). The reference
+REST contract is [`api/openapi.yaml`](../api/openapi.yaml).
 
-The [GovStack non-functional requirements document](https://govstack.gitbook.io/specification/architecture-and-nonfunctional-requirements/6-onboarding) provides additional information on how 'adaptors' may be used to translate an existing API to the patterns described here. This section also provides guidance on how candidate products are tested and how GovStack validates a product's API against the API specifications defined here.&#x20;
+## 8.1 Requirement traceability
 
-{% hint style="success" %}
-All APIs will be defined using the OpenAPI (Swagger) standard. The API definitions will be hosted outside of this document. This section may provide a brief description of required APIs.&#x20;
+Every normative interface requirement in Sections 5 and 6 has exactly one
+disposition in [`api/coverage.yaml`](../api/coverage.yaml). The coverage file is
+the single authoritative requirement-to-interface mapping. A BB records a
+planned, external-standard, or non-applicable interface explicitly rather than
+silently omitting it.
 
-This section will primarily contain links to the GitHub repository for OpenAPI definition (yaml) files as well as to a website hosted by GovStack that provides a live API documentation portal.
+The template reference maps:
 
-Note that APIs should be grouped by functional area (from sections 4 and 6) where appropriate.
+| Requirement | Canonical operations |
+|---|---|
+| `BB-TPL-FR-001` | `listRecords` |
+| `BB-TPL-FR-002` | `createRecord`, `getRecord` |
+| `BB-TPL-FR-003` | `requestRecordExport`, `getOperation`, `cancelOperation` |
+| `BB-TPL-XR-001` | `getHealth` |
+| `BB-TPL-XR-002` | All reference operations through schema and guide validation |
+| `BB-TPL-XR-003` | All non-health operations |
 
-OpenAPI links to the GitHub repository can be made in an interactive way using the GitBook OpenAPI widget, linking to the GitHub repo version of the .yaml file, remembering to link to the “raw” url. An example from the Registries BB is shown below and can be replaced.
-{% endhint %}
+## 8.2 Contract ownership
 
-## 8.1 Administrative APIs
-
-{% swagger src=".gitbook/assets/Govstack_scheduler_BB_APIs.json" path="/event/new" method="post" %}
-[Govstack_scheduler_BB_APIs.json](.gitbook/assets/Govstack_scheduler_BB_APIs.json)
-{% endswagger %}
-
-{% swagger src=".gitbook/assets/Govstack_scheduler_BB_APIs.json" path="/event/modifications" method="put" %}
-[Govstack_scheduler_BB_APIs.json](.gitbook/assets/Govstack_scheduler_BB_APIs.json)
-{% endswagger %}
-
-{% swagger src=".gitbook/assets/Govstack_scheduler_BB_APIs.json" path="/event" method="delete" %}
-[Govstack_scheduler_BB_APIs.json](.gitbook/assets/Govstack_scheduler_BB_APIs.json)
-{% endswagger %}
-
-## 8.2 User APIs
+- API paths, parameters, schemas, responses, and examples belong in the
+  canonical OpenAPI or AsyncAPI file, not copied into Markdown.
+- Review `api/coverage.yaml` whenever requirements or operations change.
+- Pin shared cross-BB shapes from `api/common/` and record their upstream
+  revision in [`api/common/README.md`](../api/common/README.md); keep domain
+  schemas in the BB's canonical API document.
