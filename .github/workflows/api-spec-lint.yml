@@ -3,15 +3,11 @@
 # Lints this repo's OpenAPI/AsyncAPI spec against the GovStack Cross-BB API
 # Design Guide, using the composite action in api-design-guide/linter/. This
 # workflow is inherited as-is by Building Block (BB) repos instantiated from
-# bb-template, so it must work with either the template's empty placeholder
-# specs or a BB's real spec.
+# bb-template. Repositories without an API declare that explicitly in
+# api/index.yaml; empty legacy swagger placeholders are not conformant.
 #
-# Once a BB adds a real spec under api/, lint failures at or above the
-# fail-on threshold (default: error) will fail this check. Whether/when to
-# tighten that threshold, grant exceptions, or otherwise govern enforcement
-# is left to each BB per the guide's own governance note (see
-# api-design-guide/part-e/20-conformance-and-validation.md, "Note on
-# governance") — this workflow just wires up the default.
+# The linter always runs in conformance mode. Deterministic contract failures
+# block, while heuristic findings remain advisory warnings by default.
 #
 # A BB repo may instead delete the inherited api-design-guide/linter/ folder
 # and pin the action from this template's repo directly, e.g.:
@@ -22,42 +18,42 @@ on:
   pull_request:
     paths:
       - "api/**"
-      - "api-design-guide/linter/**"
+      - "spec/**/*.md"
+      - "api-design-guide/**"
       - ".github/workflows/api-spec-lint.yml"
   push:
     branches:
       - main
     paths:
       - "api/**"
-      - "api-design-guide/linter/**"
+      - "spec/**/*.md"
+      - "api-design-guide/**"
       - ".github/workflows/api-spec-lint.yml"
 
 jobs:
+  linter-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test bundled API linter and coverage contract
+        working-directory: api-design-guide/linter
+        env:
+          COVERAGE_ENFORCE: "1"
+        run: |
+          npm ci
+          npm test
+      - name: Check generated rule index and guide links
+        run: |
+          python3 api-design-guide/tools/build_rules_index.py --check
+          python3 api-design-guide/tools/check_links.py
+
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # bb-template ships empty placeholder specs, so a fresh template clone
-      # (or a BB that hasn't added its spec yet) has nothing to lint. Skip
-      # the lint step in that case rather than failing the check.
-      - name: Check for API spec
-        id: guard
-        shell: bash
-        run: |
-          has_spec=false
-          for f in api/openapi.yaml api/asyncapi.yaml; do
-            if [[ -f "$f" ]] && [[ -n "$(tr -d '[:space:]' < "$f")" ]]; then
-              has_spec=true
-            fi
-          done
-          if [[ "$has_spec" == "true" ]]; then
-            echo "spec-present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "spec-present=false" >> "$GITHUB_OUTPUT"
-            echo "no API spec present; skipping lint (the bb-template ships empty placeholders)"
-          fi
-
       - name: Lint API spec
-        if: steps.guard.outputs.spec-present == 'true'
         uses: ./api-design-guide/linter
