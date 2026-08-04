@@ -288,6 +288,23 @@ components:
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
   schemas:
+    CommonErrorCode:
+      type: string
+      description: >-
+        The cross-BB common error catalogue (guide 11.7), modelled on
+        google.rpc.Code and named with the reverse-DNS convention of guide 11.5.
+        A BB-specific error uses the same shape with the BB's own registered
+        code and is not listed here.
+      enum:
+        - global.govstack.common.unauthenticated
+        - global.govstack.common.permissionDenied
+        - global.govstack.common.notFound
+        - global.govstack.common.invalidArgument
+        - global.govstack.common.alreadyExists
+        - global.govstack.common.aborted
+        - global.govstack.common.resourceExhausted
+        - global.govstack.common.internal
+        - global.govstack.common.unimplemented
     Problem:
       type: object
       description: >-
@@ -323,7 +340,10 @@ components:
         code:
           type: string
           pattern: '^global\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*$'
-          description: Stable namespaced machine-readable error identifier.
+          description: >-
+            Stable namespaced machine-readable error identifier. A cross-BB
+            common error uses a value from CommonErrorCode; a BB-specific error
+            uses the BB's own registered code in the same shape.
           example: global.govstack.common.internal
         traceId:
           type: string
