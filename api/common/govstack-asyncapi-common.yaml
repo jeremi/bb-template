@@ -1,0 +1,242 @@
+asyncapi: 3.0.0
+info:
+  title: GovStack AsyncAPI Common Components
+  version: 0.1.0-draft
+  description: >-
+    Minimal reusable CloudEvents, asynchronous error, trace, signature, and
+    service-authentication components for GovStack AsyncAPI specifications.
+  contact:
+    name: GovStack API Working Group
+    url: https://www.govstack.global/
+servers: {}
+channels: {}
+operations: {}
+x-govstack-components-version: 0.1.0-draft
+x-govstack-delivery-extensions:
+  version: 0.1.0-draft
+  description: >-
+    Declares the machine-readable delivery-semantics specification extensions
+    (guide §17.11–§17.15) that every GovStack AsyncAPI operation carries
+    alongside a human-readable description. Capability values are a bare
+    string or an object whose `status` field carries the value. Concrete
+    retry counts, backoff intervals, retention periods, replay windows, and
+    dead-letter store settings belong in implementation profiles (§17.14).
+  extensions:
+    x-govstack-delivery:
+      appliesTo: operation
+      values: [atMostOnce, atLeastOnce, effectivelyOnce]
+      semantics: >-
+        Delivery guarantee of the transport contract. effectivelyOnce must be
+        backed by an idempotency contract, duplicate detection, or a
+        documented resource-state invariant; it never implies the transport
+        literally delivers exactly once.
+    x-govstack-ordering:
+      appliesTo: operation
+      values: >-
+        The declared partition key or scope when ordering is partitioned,
+        keyed, or scoped; the explicit string "none" when no ordering is
+        guaranteed.
+      semantics: Ordering guarantee of the operation, stated explicitly either way.
+    x-govstack-redelivery:
+      appliesTo: operation
+      values: [supported, unsupported, notApplicable]
+      semantics: Whether the chosen transport contract exposes automatic redelivery.
+    x-govstack-dead-letter:
+      appliesTo: operation
+      values: [supported, unsupported, notApplicable]
+      semantics: Whether undeliverable or failed messages are routed to a dead-letter store.
+    x-govstack-retention:
+      appliesTo: operation
+      values: [supported, unsupported, notApplicable]
+      semantics: Whether delivered messages remain retained for later consumption.
+    x-govstack-replay:
+      appliesTo: operation
+      values: [supported, unsupported, notApplicable]
+      semantics: Whether consumers can replay previously delivered messages.
+x-govstack-event-signature-profile:
+  version: 0.1.0-draft
+  serialization: JWS Compact Serialization with a detached payload
+  payloadEncoding:
+    b64: true
+    behavior: Default JWS payload encoding; RFC 7797 unencoded payload mode is not used.
+  protectedHeader:
+    alg: ES256
+    kid: REQUIRED
+  payloadBytes: UTF-8 bytes of the RFC 8785 canonical JSON structured CloudEvent payload.
+  signingInput: "BASE64URL(protected) + '.' + BASE64URL(payload)"
+  wireValue: protected..signature
+  verificationInputs: The protected kid selects the publisher public key; the full event body is canonicalized and verified.
+components:
+  securitySchemes:
+    OAuthClientCredentials:
+      type: oauth2
+      description: OAuth 2.0 client-credentials template for authenticated broker access.
+      flows:
+        clientCredentials:
+          tokenUrl: https://identity.example.org/oauth2/token
+          availableScopes: {}
+  messages:
+    CloudEvent:
+      name: cloudEvent
+      title: Structured GovStack CloudEvent
+      summary: Reusable structured CloudEvents JSON envelope for a BB domain event.
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/EventHeaders'
+      payload:
+        $ref: '#/components/schemas/CloudEventEnvelope'
+      examples:
+        - name: referenceEvent
+          summary: Generic event showing trace and signature metadata.
+          headers:
+            govstackSignature: eyJhbGciOiJFUzI1NiIsImtpZCI6ImtleS0xIn0..MEUCIQDexample
+          payload:
+            specversion: '1.0'
+            id: 5e0c63c2-2b8a-4d3f-9a51-7c6b0d9e8f21
+            source: urn:govstack:bb:template
+            type: org.govstack.template.record.created
+            time: '2026-07-10T12:00:00Z'
+            datacontenttype: application/json
+            traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+            data:
+              resourceId: 7d9ad9df-bfc3-451a-94e0-24afae30750f
+    AsyncError:
+      name: govStackAsyncError
+      title: GovStack asynchronous error
+      summary: Transport-neutral rejection or processing failure for an asynchronous command.
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GovStackAsyncError'
+      examples:
+        - name: rejectedCommand
+          summary: A command rejected because one field is invalid.
+          payload:
+            type: https://docs.govstack.org/errors/common/invalidArgument
+            title: Command validation failed
+            code: org.govstack.common.invalidArgument
+            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+            timestamp: '2026-07-10T12:00:00Z'
+            errors:
+              - pointer: /data/name
+                code: org.govstack.common.invalidArgument
+                message: Name must not be blank.
+  schemas:
+    EventHeaders:
+      type: object
+      description: GovStack-owned transport metadata accompanying a structured CloudEvent.
+      required:
+        - govstackSignature
+      properties:
+        govstackSignature:
+          type: string
+          description: Detached JWS over the canonicalized structured CloudEvent payload.
+        idempotencyKey:
+          type: string
+          description: Opaque de-duplication key when the message triggers non-idempotent processing.
+          maxLength: 255
+    CloudEventEnvelope:
+      type: object
+      description: CloudEvents 1.0 structured JSON envelope with GovStack trace extensions.
+      required:
+        - specversion
+        - id
+        - source
+        - type
+        - data
+      properties:
+        specversion:
+          type: string
+          const: '1.0'
+          description: CloudEvents wire version for the adopted 1.0.x specification.
+        id:
+          type: string
+          description: Unique identifier of this event occurrence.
+        source:
+          type: string
+          format: uri-reference
+          description: Stable logical URI reference for the publishing BB surface.
+        type:
+          type: string
+          pattern: '^org\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$'
+          description: Reverse-DNS semantic event type without an API version segment.
+        time:
+          type: string
+          format: date-time
+          description: RFC 3339 time at which the event occurred.
+        datacontenttype:
+          type: string
+          const: application/json
+          description: Media type of the structured event data.
+        subject:
+          type: string
+          description: Optional opaque identifier of the resource concerned by the event.
+        traceparent:
+          type: string
+          pattern: '^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$'
+          description: W3C Trace Context extension attribute for the distributed trace.
+        tracestate:
+          type: string
+          maxLength: 512
+          description: Optional W3C Trace Context vendor state containing no personal data.
+        correlationid:
+          type: string
+          description: Optional workflow correlation identifier.
+        causationid:
+          type: string
+          description: Optional identifier of the message that caused this event.
+        data:
+          type: object
+          description: BB-specific domain payload specialised by the referencing message.
+    GovStackAsyncError:
+      type: object
+      description: Transport-neutral asynchronous command rejection or processing failure.
+      required:
+        - type
+        - title
+        - code
+        - traceId
+        - timestamp
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Stable absolute problem-type URI.
+        title:
+          type: string
+          description: Short human-readable summary of the error type.
+        detail:
+          type: string
+          description: Human-readable explanation specific to this failure.
+        code:
+          type: string
+          description: Stable namespaced machine-readable error identifier.
+        traceId:
+          type: string
+          pattern: '^[\da-f]{32}$'
+          description: W3C trace-id correlating the failure with the originating work.
+        timestamp:
+          type: string
+          format: date-time
+          description: RFC 3339 time at which the failure occurred.
+        errors:
+          type: array
+          description: Optional field-level errors for invalid command data.
+          items:
+            $ref: '#/components/schemas/AsyncFieldError'
+    AsyncFieldError:
+      type: object
+      description: Field-level validation failure in asynchronous message data.
+      required:
+        - pointer
+        - code
+        - message
+      properties:
+        pointer:
+          type: string
+          description: JSON Pointer identifying the invalid message field.
+        code:
+          type: string
+          description: Stable namespaced code for the field failure.
+        message:
+          type: string
+          description: Human-readable explanation of the field failure.

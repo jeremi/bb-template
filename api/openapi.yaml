@@ -1,0 +1,483 @@
+openapi: 3.1.0
+info:
+  title: GovStack Building Block Template Reference API
+  version: 1.0.0
+  description: >-
+    Small reference contract demonstrating the cross-BB API conventions. A real
+    Building Block replaces the Record domain while preserving conformance and
+    requirement traceability.
+  contact:
+    name: GovStack API Working Group
+    url: https://www.govstack.global/
+  x-govstack-api-guide:
+    version: 0.2.0-draft
+    rulesetVersion: 0.2.0-draft
+  x-govstack-common-components:
+    openapi: 0.1.0
+  x-govstack-bb-code: template
+servers:
+  - url: https://{gatewayHost}/{bbCode}
+    description: Non-production parameterised gateway pattern for the reference API.
+    variables:
+      gatewayHost:
+        default: api.example.org
+        description: Deployment gateway host; example.org is a reserved non-production default.
+      bbCode:
+        default: template
+        description: Registered code of the deployed Building Block.
+security:
+  - BuildingBlockOAuth:
+      - bb:template:records:read
+tags:
+  - name: Records
+    description: Reference resource operations used to demonstrate synchronous API conventions.
+  - name: Exports
+    description: Reference long-running export request.
+  - name: Operations
+    description: Polling and cancellation of long-running work.
+  - name: Health
+    description: Operational liveness contract.
+paths:
+  /v1/records:
+    get:
+      operationId: listRecords
+      summary: List reference records
+      description: Returns a bounded cursor-paginated collection of reference records.
+      tags:
+        - Records
+      security:
+        - CitizenOAuth:
+            - bb:template:records:read
+        - BuildingBlockOAuth:
+            - bb:template:records:read
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/PageSize'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: A page of reference records.
+          headers:
+            ETag:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordCollection'
+              example:
+                items:
+                  - id: 7d9ad9df-bfc3-451a-94e0-24afae30750f
+                    name: Reference record
+                    status: ACTIVE
+                    createdAt: '2026-07-10T10:00:00Z'
+                    updatedAt: '2026-07-10T10:00:00Z'
+                pageInfo:
+                  nextCursor: pgn_7JpQ9m2W4xK8fR3cT6vN1
+                  hasMore: true
+        '304':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotModified'
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+    post:
+      operationId: createRecord
+      summary: Create a reference record
+      description: Creates a reference record synchronously and returns its representation.
+      tags:
+        - Records
+      security:
+        - CitizenOAuth:
+            - bb:template:records:write
+        - BuildingBlockOAuth:
+            - bb:template:records:write
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        description: Values supplied by the caller for the new reference record.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordRequest'
+            example:
+              name: Reference record
+              status: ACTIVE
+      responses:
+        '201':
+          description: Reference record created.
+          headers:
+            Location:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/Location'
+            ETag:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+              example:
+                id: 7d9ad9df-bfc3-451a-94e0-24afae30750f
+                name: Reference record
+                status: ACTIVE
+                createdAt: '2026-07-10T10:00:00Z'
+                updatedAt: '2026-07-10T10:00:00Z'
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Conflict'
+        '422':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/UnprocessableContent'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+  /v1/records/{recordId}:
+    get:
+      operationId: getRecord
+      summary: Get a reference record
+      description: Retrieves one reference record by its opaque server-generated identifier.
+      tags:
+        - Records
+      security:
+        - CitizenOAuth:
+            - bb:template:records:read
+        - BuildingBlockOAuth:
+            - bb:template:records:read
+      parameters:
+        - $ref: '#/components/parameters/RecordId'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+      responses:
+        '200':
+          description: The requested reference record.
+          headers:
+            ETag:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+              example:
+                id: 7d9ad9df-bfc3-451a-94e0-24afae30750f
+                name: Reference record
+                status: ACTIVE
+                createdAt: '2026-07-10T10:00:00Z'
+                updatedAt: '2026-07-10T10:00:00Z'
+        '304':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotModified'
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+  /v1/exports:
+    post:
+      operationId: requestRecordExport
+      summary: Request a record export
+      description: Accepts a long-running record export and returns a pollable Operation.
+      tags:
+        - Exports
+      security:
+        - BuildingBlockOAuth:
+            - bb:template:exports:write
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        description: Criteria and output format for the record export.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportRequest'
+            example:
+              format: JSON_LINES
+              status: ACTIVE
+      responses:
+        '202':
+          description: Export accepted for asynchronous processing.
+          headers:
+            Location:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/Location'
+            Cache-Control:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: './common/govstack-openapi-common.yaml#/components/schemas/Operation'
+              example:
+                id: b41558c8-c248-4c39-88d5-fbc9a32326e4
+                status: PENDING
+                createdAt: '2026-07-10T10:05:00Z'
+                updatedAt: '2026-07-10T10:05:00Z'
+                progress: 0
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Conflict'
+        '422':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/UnprocessableContent'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+  /v1/operations/{operationId}:
+    get:
+      operationId: getOperation
+      summary: Get operation status
+      description: Retrieves current state, result metadata, or error for long-running work.
+      tags:
+        - Operations
+      security:
+        - BuildingBlockOAuth:
+            - bb:template:operations:read
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/OperationId'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+      responses:
+        '200':
+          description: Current Operation state.
+          headers:
+            ETag:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/ETag'
+            Cache-Control:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: './common/govstack-openapi-common.yaml#/components/schemas/Operation'
+              example:
+                id: b41558c8-c248-4c39-88d5-fbc9a32326e4
+                status: RUNNING
+                createdAt: '2026-07-10T10:05:00Z'
+                updatedAt: '2026-07-10T10:05:10Z'
+                progress: 40
+        '304':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotModified'
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+  /v1/operations/{operationId}/cancel:
+    post:
+      operationId: cancelOperation
+      summary: Cancel an operation
+      description: Requests cancellation of long-running work that has not reached a terminal state.
+      tags:
+        - Operations
+      security:
+        - BuildingBlockOAuth:
+            - bb:template:operations:write
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/OperationId'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/IdempotencyKey'
+      responses:
+        '400':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/BadRequest'
+        '200':
+          description: Operation after the cancellation request was applied.
+          headers:
+            Cache-Control:
+              $ref: './common/govstack-openapi-common.yaml#/components/headers/CacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: './common/govstack-openapi-common.yaml#/components/schemas/Operation'
+              example:
+                id: b41558c8-c248-4c39-88d5-fbc9a32326e4
+                status: CANCELLED
+                createdAt: '2026-07-10T10:05:00Z'
+                updatedAt: '2026-07-10T10:06:00Z'
+                progress: 40
+        '401':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+  /health:
+    get:
+      operationId: getHealth
+      summary: Get liveness status
+      description: Reports operational liveness without authentication or internal system detail.
+      tags:
+        - Health
+      security: []
+      parameters:
+        - $ref: './common/govstack-openapi-common.yaml#/components/parameters/Traceparent'
+      responses:
+        '200':
+          description: The Building Block is live.
+          content:
+            application/health+json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: pass
+                description: Reference API is live.
+        '500':
+          $ref: './common/govstack-openapi-common.yaml#/components/responses/InternalError'
+components:
+  securitySchemes:
+    CitizenOAuth:
+      type: oauth2
+      description: >-
+        OAuth 2.0 authorization-code access for authenticated end-user clients.
+        Clients use PKCE with S256. The API accepts access tokens and never
+        treats an OpenID Connect ID token as an API access token.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://identity.example.org/oauth2/authorize
+          tokenUrl: https://identity.example.org/oauth2/token
+          scopes:
+            bb:template:records:read: Read reference records.
+            bb:template:records:write: Create reference records.
+    BuildingBlockOAuth:
+      type: oauth2
+      description: OAuth 2.0 client-credentials access for service-to-service calls.
+      flows:
+        clientCredentials:
+          tokenUrl: https://identity.example.org/oauth2/token
+          scopes:
+            bb:template:records:read: Read reference records.
+            bb:template:records:write: Create reference records.
+            bb:template:exports:write: Request reference record exports.
+            bb:template:operations:read: Read long-running Operation state.
+            bb:template:operations:write: Request cancellation of long-running Operations.
+  parameters:
+    RecordId:
+      name: recordId
+      in: path
+      required: true
+      description: Opaque server-generated identifier of a reference record.
+      schema:
+        type: string
+        format: uuid
+        description: UUID assigned to a reference record by the server.
+  schemas:
+    CreateRecordRequest:
+      type: object
+      description: Caller-controlled values used to create a reference record.
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Human-readable label that contains no personal data.
+        status:
+          type: string
+          description: 'Requested state: ACTIVE for current records or ARCHIVED for retained records.'
+          enum:
+            - ACTIVE
+            - ARCHIVED
+          x-extensible-enum: true
+    Record:
+      type: object
+      description: Generic resource used to demonstrate the template API conventions.
+      required:
+        - id
+        - name
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Opaque server-generated record identifier.
+        name:
+          type: string
+          description: Human-readable record label without personal data.
+        status:
+          type: string
+          description: 'Current state: ACTIVE for current records or ARCHIVED for retained records.'
+          enum:
+            - ACTIVE
+            - ARCHIVED
+          x-extensible-enum: true
+        createdAt:
+          type: string
+          format: date-time
+          description: RFC 3339 time at which the record was created.
+        updatedAt:
+          type: string
+          format: date-time
+          description: RFC 3339 time at which the record last changed.
+    RecordCollection:
+      type: object
+      description: Cursor-paginated collection of reference records.
+      required:
+        - items
+        - pageInfo
+      properties:
+        items:
+          type: array
+          description: Reference records in the current page.
+          items:
+            $ref: '#/components/schemas/Record'
+        pageInfo:
+          $ref: './common/govstack-openapi-common.yaml#/components/schemas/PageInfo'
+    ExportRequest:
+      type: object
+      description: Criteria and representation requested for a long-running record export.
+      required:
+        - format
+      properties:
+        format:
+          type: string
+          description: 'Export representation: JSON_LINES for newline-delimited JSON or CSV for comma-separated values.'
+          enum:
+            - JSON_LINES
+            - CSV
+          x-extensible-enum: true
+        status:
+          type: string
+          description: 'Optional equality filter: ACTIVE for current records or ARCHIVED for retained records.'
+          enum:
+            - ACTIVE
+            - ARCHIVED
+          x-extensible-enum: true
+    Health:
+      type: object
+      description: Minimal operational liveness response without internal details.
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Liveness state defined by the adopted health-check convention.
+          enum:
+            - pass
+            - fail
+            - warn
+          x-extensible-enum: false
+        description:
+          type: string
+          description: Public, non-sensitive summary of the liveness state.
