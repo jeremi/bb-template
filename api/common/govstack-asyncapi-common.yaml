@@ -94,7 +94,7 @@ components:
             specversion: '1.0'
             id: 5e0c63c2-2b8a-4d3f-9a51-7c6b0d9e8f21
             source: urn:govstack:bb:template
-            type: org.govstack.template.record.created
+            type: global.govstack.template.record.created
             time: '2026-07-10T12:00:00Z'
             datacontenttype: application/json
             traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
@@ -111,14 +111,14 @@ components:
         - name: rejectedCommand
           summary: A command rejected because one field is invalid.
           payload:
-            type: https://docs.govstack.org/errors/common/invalidArgument
+            type: https://docs.govstack.global/errors/common/invalidArgument
             title: Command validation failed
-            code: org.govstack.common.invalidArgument
+            code: global.govstack.common.invalidArgument
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
             errors:
               - pointer: /data/name
-                code: org.govstack.common.invalidArgument
+                code: global.govstack.common.invalidArgument
                 message: Name must not be blank.
   schemas:
     EventHeaders:
@@ -157,7 +157,7 @@ components:
           description: Stable logical URI reference for the publishing BB surface.
         type:
           type: string
-          pattern: '^org\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$'
+          pattern: '^global\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$'
           description: Reverse-DNS semantic event type without an API version segment.
         time:
           type: string

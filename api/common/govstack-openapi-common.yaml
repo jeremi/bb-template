@@ -159,17 +159,17 @@ components:
           schema:
             $ref: '#/components/schemas/ValidationProblem'
           example:
-            type: https://docs.govstack.org/errors/common/invalidArgument
+            type: https://docs.govstack.global/errors/common/invalidArgument
             title: Request validation failed
             status: 400
             detail: One request field is invalid.
             instance: /v1/records
-            code: org.govstack.common.invalidArgument
+            code: global.govstack.common.invalidArgument
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
             errors:
               - pointer: /name
-                code: org.govstack.common.invalidArgument
+                code: global.govstack.common.invalidArgument
                 message: Name must not be blank.
     Unauthorized:
       description: Authentication is missing or invalid.
@@ -183,10 +183,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/unauthenticated
+            type: https://docs.govstack.global/errors/common/unauthenticated
             title: Authentication required
             status: 401
-            code: org.govstack.common.unauthenticated
+            code: global.govstack.common.unauthenticated
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     Forbidden:
@@ -199,10 +199,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/permissionDenied
+            type: https://docs.govstack.global/errors/common/permissionDenied
             title: Permission denied
             status: 403
-            code: org.govstack.common.permissionDenied
+            code: global.govstack.common.permissionDenied
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     NotFound:
@@ -215,10 +215,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/notFound
+            type: https://docs.govstack.global/errors/common/notFound
             title: Resource not found
             status: 404
-            code: org.govstack.common.notFound
+            code: global.govstack.common.notFound
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     Conflict:
@@ -231,10 +231,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/aborted
+            type: https://docs.govstack.global/errors/common/aborted
             title: State conflict
             status: 409
-            code: org.govstack.common.aborted
+            code: global.govstack.common.aborted
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     UnprocessableContent:
@@ -247,10 +247,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/invalidArgument
+            type: https://docs.govstack.global/errors/common/invalidArgument
             title: Request cannot be processed
             status: 422
-            code: org.govstack.common.invalidArgument
+            code: global.govstack.common.invalidArgument
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     TooManyRequests:
@@ -265,10 +265,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/resourceExhausted
+            type: https://docs.govstack.global/errors/common/resourceExhausted
             title: Request limit exceeded
             status: 429
-            code: org.govstack.common.resourceExhausted
+            code: global.govstack.common.resourceExhausted
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
     InternalError:
@@ -281,10 +281,10 @@ components:
           schema:
             $ref: '#/components/schemas/Problem'
           example:
-            type: https://docs.govstack.org/errors/common/internal
+            type: https://docs.govstack.global/errors/common/internal
             title: Internal error
             status: 500
-            code: org.govstack.common.internal
+            code: global.govstack.common.internal
             traceId: 4bf92f3577b34da6a3ce929d0e0e4736
             timestamp: '2026-07-10T12:00:00Z'
   schemas:
@@ -322,9 +322,9 @@ components:
           description: URI reference identifying this problem occurrence.
         code:
           type: string
-          pattern: '^org\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*$'
+          pattern: '^global\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*$'
           description: Stable namespaced machine-readable error identifier.
-          example: org.govstack.common.internal
+          example: global.govstack.common.internal
         traceId:
           type: string
           pattern: '^[\da-f]{32}$'
