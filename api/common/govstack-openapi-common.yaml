@@ -1,329 +1,41 @@
 openapi: 3.1.0
 info:
-  title: GovStack OpenAPI Common Components
+  title: GovStack OpenAPI Common Schemas
   version: 0.1.0-draft
   description: >-
-    Minimal reusable components for GovStack REST API specifications. Domain
-    resources and BB-specific OAuth scopes remain in each BB specification.
+    Minimal cross-BB schemas for HTTP problem details, field validation, and
+    cursor pagination. Each BB owns its operations, security, parameters,
+    headers, responses, and examples.
   contact:
     name: GovStack API Working Group
     url: https://www.govstack.global/
 paths: {}
 x-govstack-components-version: 0.1.0-draft
-x-govstack-event-signature-profile:
-  version: 0.1.0-draft
-  serialization: JWS Compact Serialization with a detached payload
-  payloadEncoding:
-    b64: true
-    behavior: Default JWS payload encoding; RFC 7797 unencoded payload mode is not used.
-  protectedHeader:
-    alg: ES256
-    kid: REQUIRED
-  payloadBytes: UTF-8 bytes of the RFC 8785 canonical JSON structured CloudEvent request body.
-  signingInput: "BASE64URL(protected) + '.' + BASE64URL(payload)"
-  wireValue: protected..signature
-  verificationInputs: The protected kid selects the publisher public key; the full event body is canonicalized and verified.
 components:
-  securitySchemes:
-    OAuthAuthorizationCode:
-      type: oauth2
-      description: >-
-        OAuth 2.0 authorization-code flow template for an authenticated
-        end-user. Clients use PKCE with S256, and APIs accept access tokens,
-        never OpenID Connect ID tokens. A BB declares its own resource scopes.
-      flows:
-        authorizationCode:
-          authorizationUrl: https://identity.example.org/oauth2/authorize
-          tokenUrl: https://identity.example.org/oauth2/token
-          scopes: {}
-    OAuthClientCredentials:
-      type: oauth2
-      description: >-
-        OAuth 2.0 client-credentials flow template for service-to-service
-        access. A BB declares its own resource scopes in its canonical API.
-      flows:
-        clientCredentials:
-          tokenUrl: https://identity.example.org/oauth2/token
-          scopes: {}
-    MutualTLS:
-      type: mutualTLS
-      description: Mutual TLS for service-to-service deployments requiring certificate authentication.
-  parameters:
-    Traceparent:
-      name: traceparent
-      in: header
-      required: false
-      description: W3C Trace Context parent identifier propagated across service boundaries.
-      schema:
-        type: string
-        description: W3C Trace Context traceparent value.
-        pattern: '^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$'
-    Tracestate:
-      name: tracestate
-      in: header
-      required: false
-      description: Optional W3C Trace Context vendor state containing no personal data.
-      schema:
-        type: string
-        description: Ordered W3C Trace Context list-member values.
-        maxLength: 512
-    GovStackSignature:
-      name: GovStack-Signature
-      in: header
-      required: true
-      description: Detached JWS over the RFC 8785 canonicalized structured CloudEvent body.
-      schema:
-        type: string
-        description: JWS Compact Serialization value in protected..signature wire form.
-    IdempotencyKey:
-      name: Idempotency-Key
-      in: header
-      required: true
-      description: Client-generated opaque key that makes a non-idempotent request safe to retry.
-      schema:
-        type: string
-        description: Opaque idempotency key retained for the BB's documented replay window.
-        minLength: 1
-        maxLength: 255
-    PageSize:
-      name: pageSize
-      in: query
-      required: false
-      description: Maximum number of resources returned in one page.
-      schema:
-        type: integer
-        description: Requested page size within the documented bounds.
-        minimum: 1
-        default: 20
-        maximum: 100
-    Cursor:
-      name: cursor
-      in: query
-      required: false
-      description: Opaque cursor returned as pageInfo.nextCursor by the previous page.
-      schema:
-        type: string
-        description: Opaque server-generated continuation cursor.
-    OperationId:
-      name: operationId
-      in: path
-      required: true
-      description: Opaque identifier of a long-running Operation resource.
-      schema:
-        type: string
-        format: uuid
-        description: UUID assigned to the Operation by the server.
-  headers:
-    Location:
-      description: URI reference of the created resource or accepted Operation.
-      schema:
-        type: string
-        format: uri-reference
-        description: URI reference that the caller can subsequently retrieve.
-    ETag:
-      description: Entity tag representing the version of the returned resource.
-      schema:
-        type: string
-        description: Opaque entity tag suitable for a conditional request.
-    CacheControl:
-      description: Cache directive; error and Operation status responses use no-store.
-      schema:
-        type: string
-        description: HTTP Cache-Control field value.
-        example: no-store
-    WwwAuthenticate:
-      description: OAuth 2.0 Bearer authentication challenge.
-      schema:
-        type: string
-        description: RFC 6750 Bearer challenge.
-        example: 'Bearer realm="govstack", error="invalid_token"'
-    RetryAfter:
-      description: Number of seconds the caller waits before retrying.
-      schema:
-        type: integer
-        description: Non-negative retry delay in seconds.
-        minimum: 0
-  responses:
-    NotModified:
-      description: The resource has not changed since the supplied entity tag.
-      headers:
-        ETag:
-          $ref: '#/components/headers/ETag'
-    BadRequest:
-      description: The request is malformed or contains invalid fields.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/ValidationProblem'
-          example:
-            type: https://docs.govstack.global/errors/common/invalidArgument
-            title: Request validation failed
-            status: 400
-            detail: One request field is invalid.
-            instance: /v1/records
-            code: global.govstack.common.invalidArgument
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-            errors:
-              - pointer: /name
-                code: global.govstack.common.invalidArgument
-                message: Name must not be blank.
-    Unauthorized:
-      description: Authentication is missing or invalid.
-      headers:
-        WWW-Authenticate:
-          $ref: '#/components/headers/WwwAuthenticate'
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/unauthenticated
-            title: Authentication required
-            status: 401
-            code: global.govstack.common.unauthenticated
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    Forbidden:
-      description: The authenticated caller is not authorised for the operation.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/permissionDenied
-            title: Permission denied
-            status: 403
-            code: global.govstack.common.permissionDenied
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    NotFound:
-      description: The addressed resource does not exist.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/notFound
-            title: Resource not found
-            status: 404
-            code: global.govstack.common.notFound
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    Conflict:
-      description: The request conflicts with the current resource state.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/aborted
-            title: State conflict
-            status: 409
-            code: global.govstack.common.aborted
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    UnprocessableContent:
-      description: The request is well formed but cannot be processed semantically.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/invalidArgument
-            title: Request cannot be processed
-            status: 422
-            code: global.govstack.common.invalidArgument
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    TooManyRequests:
-      description: The caller has exceeded an applicable request limit.
-      headers:
-        Retry-After:
-          $ref: '#/components/headers/RetryAfter'
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/resourceExhausted
-            title: Request limit exceeded
-            status: 429
-            code: global.govstack.common.resourceExhausted
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
-    InternalError:
-      description: An unexpected server error occurred.
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControl'
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/Problem'
-          example:
-            type: https://docs.govstack.global/errors/common/internal
-            title: Internal error
-            status: 500
-            code: global.govstack.common.internal
-            traceId: 4bf92f3577b34da6a3ce929d0e0e4736
-            timestamp: '2026-07-10T12:00:00Z'
   schemas:
-    CommonErrorCode:
-      type: string
-      description: >-
-        The cross-BB common error catalogue (guide 11.7), modelled on
-        google.rpc.Code and named with the reverse-DNS convention of guide 11.5.
-        A BB-specific error uses the same shape with the BB's own registered
-        code and is not listed here.
-      enum:
-        - global.govstack.common.unauthenticated
-        - global.govstack.common.permissionDenied
-        - global.govstack.common.notFound
-        - global.govstack.common.invalidArgument
-        - global.govstack.common.alreadyExists
-        - global.govstack.common.aborted
-        - global.govstack.common.resourceExhausted
-        - global.govstack.common.internal
-        - global.govstack.common.unimplemented
     Problem:
       type: object
       description: >-
-        RFC 9457 problem details with stable GovStack error code and correlation
-        fields. Error text contains no personal data or system-internal detail.
+        RFC 9457 problem details with one stable machine identifier in type and
+        a trace identifier for correlation. Error text contains no personal
+        data or system-internal detail.
       required:
         - type
         - title
         - status
-        - code
         - traceId
-        - timestamp
       properties:
         type:
           type: string
           format: uri
-          description: Stable absolute URI identifying the problem type.
+          pattern: '^https://govstack\.global/problems/[a-z][a-z0-9-]{1,30}/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$'
+          description: >-
+            Stable GovStack problem-type URI and machine identifier in the form
+            https://govstack.global/problems/{bb-code}/{problem-slug}, where the
+            problem slug uses kebab-case.
         title:
           type: string
+          minLength: 1
           description: Short human-readable summary of the problem type.
         status:
           type: integer
@@ -337,33 +49,16 @@ components:
           type: string
           format: uri-reference
           description: URI reference identifying this problem occurrence.
-        code:
-          type: string
-          pattern: '^global\.govstack\.[a-z][a-z0-9-]{1,30}\.[a-z][a-zA-Z0-9]*$'
-          description: >-
-            Stable namespaced machine-readable error identifier. A cross-BB
-            common error uses a value from CommonErrorCode; a BB-specific error
-            uses the BB's own registered code in the same shape.
-          example: global.govstack.common.internal
         traceId:
           type: string
-          pattern: '^[\da-f]{32}$'
+          pattern: '^(?!0{32}$)[\da-f]{32}$'
           description: The 32-hex-digit trace-id component of the effective request traceparent.
-        timestamp:
-          type: string
-          format: date-time
-          description: RFC 3339 time at which the error occurred.
-        errors:
-          type: array
-          description: Field-level validation failures, omitted for non-field errors.
-          items:
-            $ref: '#/components/schemas/FieldError'
     ValidationProblem:
       description: Problem details for a request containing one or more invalid fields.
       allOf:
         - $ref: '#/components/schemas/Problem'
         - type: object
-          description: Extension requiring field-level error details.
+          description: Field-level validation details.
           required:
             - errors
           properties:
@@ -375,83 +70,36 @@ components:
                 $ref: '#/components/schemas/FieldError'
     FieldError:
       type: object
-      description: Machine-readable failure associated with one request field.
+      description: Human-readable failure associated with one request field.
       required:
         - pointer
-        - code
         - message
       properties:
         pointer:
           type: string
+          format: json-pointer
           description: JSON Pointer identifying the invalid request field.
-        code:
-          type: string
-          description: Stable namespaced code for this field failure.
         message:
           type: string
+          minLength: 1
           description: Human-readable explanation of the field failure.
     PageInfo:
       type: object
       description: Cursor metadata for a bounded collection response.
       required:
         - nextCursor
-        - hasMore
       properties:
         nextCursor:
           type:
             - string
             - 'null'
-          description: Opaque cursor for the next page, or null on the final page.
-        hasMore:
-          type: boolean
-          description: Whether another page is available.
+          minLength: 1
+          description: Opaque non-empty cursor for the next page, or null on the final page.
         total:
           type: integer
           minimum: 0
-          description: Optional total number of matching resources when inexpensive to compute.
-    Operation:
-      type: object
-      description: Pollable representation of long-running work.
-      required:
-        - id
-        - status
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Opaque server-generated identifier of the Operation.
-        status:
-          type: string
-          description: 'Current lifecycle state: PENDING, RUNNING, SUCCEEDED, FAILED, or CANCELLED.'
-          enum:
-            - PENDING
-            - RUNNING
-            - SUCCEEDED
-            - FAILED
-            - CANCELLED
-        result:
-          type:
-            - object
-            - 'null'
-          description: Result metadata when the Operation succeeds.
-        error:
-          description: Problem details when the Operation fails.
-          oneOf:
-            - $ref: '#/components/schemas/Problem'
-            - type: 'null'
-              description: No error has occurred.
-        createdAt:
-          type: string
-          format: date-time
-          description: RFC 3339 time at which the Operation was created.
-        updatedAt:
-          type: string
-          format: date-time
-          description: RFC 3339 time at which the Operation last changed.
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-          description: Optional completion percentage from zero through one hundred.
+          description: >-
+            Optional total number of matching resources when inexpensive to
+            compute. Each BB use must document whether the value is exact or
+            estimated and whether it describes the current collection or the
+            snapshot used to produce the first page.
