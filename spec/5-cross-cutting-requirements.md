@@ -1,18 +1,23 @@
 # 5 Cross-Cutting Requirements
 
-List requirements that apply across functional areas. Use
-`{bb-code}-XR-{number}` IDs, RFC 2119 language, and a verification method.
+Every GovStack Building Block inherits `govstack-cfr`. Do not repeat inherited
+requirements here. Define a Building Block cross-functional requirement only
+when this specification extends or replaces a parent requirement, and state the
+parent relationship explicitly.
 
 ## 5.1 Requirements
 
-- **BB-TPL-XR-001** **REQUIRED**: The BB MUST expose the unauthenticated `/health` contract defined in the canonical OpenAPI document without returning internal system detail.
-- **BB-TPL-XR-002** **REQUIRED**: The canonical API documents MUST pass their base schema validators and the GovStack API Design Guide ruleset targeted by the documents.
-- **BB-TPL-XR-003** **REQUIRED**: Non-operational operations MUST declare OAuth 2.0 security and W3C Trace Context as defined by the canonical API contract.
+The template defines no additional cross-functional requirements. A real BB
+adds one in the same format as Section 6, using a canonical
+`govstack-bb-{name}-cfr#req-{number}` identifier and an `extends` or `replaces`
+relationship to the applicable `govstack-cfr-*#req-{number}` parent.
 
-## 5.2 Exceptions to architectural cross-cutting requirements
+## 5.2 Parent requirement relationships
 
-State each exception, its rationale, approver, and expiry or review date. The
-template declares no exceptions.
+An inherited IMMUTABLE requirement cannot be changed. An EXTENSIBLE requirement
+may be tightened, and a REPLACEABLE requirement may be replaced while
+preserving its external contract. Use INAPPLICABLE only where the GovStack
+Requirements Model permits it and include the rationale in the requirement.
 
 ## 5.3 Standards
 

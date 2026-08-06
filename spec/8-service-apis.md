@@ -6,22 +6,19 @@ REST contract is [`api/openapi.yaml`](../api/openapi.yaml).
 
 ## 8.1 Requirement traceability
 
-Every normative interface requirement in Sections 5 and 6 has exactly one
-disposition in [`api/coverage.yaml`](../api/coverage.yaml). The coverage file is
-the single authoritative requirement-to-interface mapping. A BB records a
-planned, external-standard, or non-applicable interface explicitly rather than
-silently omitting it.
+Every active REQUIRED or RECOMMENDED interface requirement in Sections 5 and 6
+has exactly one disposition in [`api/coverage.yaml`](../api/coverage.yaml).
+DRAFT, DEPRECATED, and INAPPLICABLE requirements are not active coverage
+obligations. The coverage file is the authoritative requirement-to-interface
+mapping.
 
 The template reference maps:
 
 | Requirement | Canonical operations |
 |---|---|
-| `BB-TPL-FR-001` | `listRecords` |
-| `BB-TPL-FR-002` | `createRecord`, `getRecord` |
-| `BB-TPL-FR-003` | `requestRecordExport`, `getOperation`, `cancelOperation` |
-| `BB-TPL-XR-001` | `getHealth` |
-| `BB-TPL-XR-002` | All reference operations through schema and guide validation |
-| `BB-TPL-XR-003` | All non-health operations |
+| `govstack-bb-template-fr#req-1` | `listRecords` |
+| `govstack-bb-template-fr#req-2` | `createRecord`, `getRecord` |
+| `govstack-bb-template-fr#req-3` | `requestRecordExport`, `getOperation`, `cancelOperation` |
 
 ## 8.2 Contract ownership
 

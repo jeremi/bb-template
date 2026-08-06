@@ -6,7 +6,7 @@ observable. Name the requirement IDs exercised by each workflow.
 
 ## 9.1 Create and retrieve a record
 
-Requirement: `BB-TPL-FR-002`.
+Requirement: `govstack-bb-template-fr#req-2`.
 
 ```mermaid
 sequenceDiagram
@@ -20,7 +20,7 @@ sequenceDiagram
 
 ## 9.2 Request long-running work
 
-Requirement: `BB-TPL-FR-003`.
+Requirement: `govstack-bb-template-fr#req-3`.
 
 ```mermaid
 sequenceDiagram

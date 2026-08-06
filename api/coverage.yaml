@@ -1,40 +1,17 @@
 version: 1
 requirements:
-  - id: BB-TPL-FR-001
+  - id: "govstack-bb-template-fr#req-1"
     disposition: operation
     operations:
       - listRecords
-  - id: BB-TPL-FR-002
+  - id: "govstack-bb-template-fr#req-2"
     disposition: operation
     operations:
       - createRecord
       - getRecord
-  - id: BB-TPL-FR-003
+  - id: "govstack-bb-template-fr#req-3"
     disposition: operation
     operations:
-      - requestRecordExport
-      - getOperation
-      - cancelOperation
-  - id: BB-TPL-XR-001
-    disposition: operation
-    operations:
-      - getHealth
-  - id: BB-TPL-XR-002
-    disposition: operation
-    operations:
-      - listRecords
-      - createRecord
-      - getRecord
-      - requestRecordExport
-      - getOperation
-      - cancelOperation
-      - getHealth
-  - id: BB-TPL-XR-003
-    disposition: operation
-    operations:
-      - listRecords
-      - createRecord
-      - getRecord
       - requestRecordExport
       - getOperation
       - cancelOperation
