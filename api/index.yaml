@@ -1,4 +1,3 @@
 version: 1
-apis:
-  - type: openapi
-    path: api/openapi.yaml
+noApi: true
+reason: This repository is a template and does not define a Building Block API surface.
