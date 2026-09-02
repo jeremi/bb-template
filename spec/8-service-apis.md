@@ -14,6 +14,12 @@ Note that APIs should be grouped by functional area (from sections 4 and 6) wher
 This section may link to rendered API documentation, but do not embed a second copy of a canonical contract in the GitBook assets.
 {% endhint %}
 
+{% hint style="info" %}
+**Optional runtime catalogue discovery.** A deployment that publishes an API catalogue can use [RFC 9727, *api-catalog: A Well-Known URI and Link Relation to Help Discovery of APIs*](https://www.rfc-editor.org/rfc/rfc9727.html). Its `/.well-known/api-catalog` resource can direct clients to the deployment's canonical catalogue at any stable URI, allowing a deployment-specific catalogue path without requiring clients to know that path in advance.
+
+This runtime discovery mechanism does not replace the canonical source contracts declared in `api/index.yaml`. An RFC 9727 implementation provides the required `application/linkset+json` representation and can make additional catalogue formats available through content negotiation.
+{% endhint %}
+
 ## 8.1 Administrative APIs
 
 ## 8.2 User APIs
